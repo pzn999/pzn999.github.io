@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trade Calculator</title>
+  <title>Trade Calculator – Input Pulito</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -62,7 +62,7 @@
   </style>
 </head>
 <body>
-  <h2>📊 Trade Calculator – PL Corretto</h2>
+  <h2>📊 Trade Calculator – Input Pulito</h2>
   
   <!-- Campo Rischio: corto e allineato -->
   <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
@@ -77,16 +77,26 @@
   
   <p style="text-align:center; margin:8px 0; color:#666;">— oppure incolla manualmente —</p>
   
-  <textarea id="input" placeholder="Esempio:
+  <textarea id="input" placeholder="Esempio con righe vuote:
 ✅ SELL BTCUSD
+
 📊 ENTRY: 47990
+
+
 💰TP1: 47840
 💰TP2: 47500
-✋ SL : 48105"></textarea>
+
+✋ SL : 48105
+
+"></textarea>
   
-  <button onclick="processManual()" class="btn">💻 Calcola</button>
+  <button onclick="processManual()" class="btn">💻 Calcola dal testo</button>
   
   <div id="output" style="margin-top: 20px; background: white; padding: 16px; border-radius: 8px; border: 1px solid #ddd;"></div>
+  
+  <div class="info">
+    ✅ Ignora righe vuote • SL sempre negativo • TP sempre positivo
+  </div>
 
   <script>
     const SYMBOL_CONFIG = {
@@ -113,9 +123,13 @@
     }
 
     function extractData(text) {
-      const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-      let symbol = null;
+      // ✅ PULIZIA ROBUSTA: rimuove righe vuote e spazi
+      const lines = text
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line !== '');
 
+      let symbol = null;
       if (lines.length > 0) {
         const knownSymbols = Object.keys(SYMBOL_CONFIG);
         for (const sym of knownSymbols) {
@@ -139,7 +153,6 @@
       return { symbol, entry, tp1, tp2, tp3, sl };
     }
 
-    // ✅ Formattazione: nessun "+" per positivi, "-" per negativi
     function formatPL(value) {
       return Math.round(value).toString();
     }
@@ -170,8 +183,6 @@
         if (d === 0) throw new Error("SL = Entry");
 
         const lots = (risk / (d * UnitsPerLot)).toFixed(2);
-
-        // ✅ Pips (sempre positivi)
         const slpips = Math.round(d * PipsPerPrezzo);
         const tp1pips = Math.round(Math.abs(data.tp1 - data.entry) * PipsPerPrezzo);
         const tp2pips = Math.round(Math.abs(data.tp2 - data.entry) * PipsPerPrezzo);
@@ -180,13 +191,8 @@
           tp3pips = Math.round(Math.abs(data.tp3 - data.entry) * PipsPerPrezzo);
         }
 
-        // ✅ CALCOLO CORRETTO DEL PL
         const lotsNum = parseFloat(lots);
-
-        // Perdita: sempre negativa
         const slpl = -Math.abs((data.entry - data.sl) * lotsNum * UnitsPerLot);
-
-        // Profitti: sempre positivi
         const tp1pl = Math.abs((data.tp1 - data.entry) * lotsNum * UnitsPerLot);
         const tp2pl = Math.abs((data.tp2 - data.entry) * lotsNum * UnitsPerLot);
         let tp3pl = null;
@@ -194,7 +200,6 @@
           tp3pl = Math.abs((data.tp3 - data.entry) * lotsNum * UnitsPerLot);
         }
 
-        // Colori
         const bgColorEntry = "#e8f5e9";
         const bgColorTP = "#e3f2fd";
         const bgColorSL = "#fff3e0";
@@ -204,17 +209,12 @@
         rows.push(`<tr><td colspan="2" style="height:12px;"></td></tr>`);
         rows.push(`<tr style="background-color:${bgColorEntry};"><td>Entry: ${data.entry}</td><td></td></tr>`);
         rows.push(`<tr><td colspan="2" style="height:12px;"></td></tr>`);
-        
-        // TP1
         rows.push(`<tr style="background-color:${bgColorTP};"><td>TP1 pips: ${tp1pips} (${formatPL(tp1pl)} $)</td><td>TP1: ${data.tp1}</td></tr>`);
-        // TP2
         rows.push(`<tr style="background-color:${bgColorTP};"><td>TP2 pips: ${tp2pips} (${formatPL(tp2pl)} $)</td><td>TP2: ${data.tp2}</td></tr>`);
-        // TP3 (opzionale)
         if (data.tp3 !== null) {
           rows.push(`<tr style="background-color:${bgColorTP};"><td>TP3 pips: ${tp3pips} (${formatPL(tp3pl)} $)</td><td>TP3: ${data.tp3}</td></tr>`);
         }
         rows.push(`<tr><td colspan="2" style="height:12px;"></td></tr>`);
-        // SL
         rows.push(`<tr style="background-color:${bgColorSL};"><td>SL pips: ${slpips} (${formatPL(slpl)} $)</td><td>SL: ${data.sl}</td></tr>`);
 
         const tableHTML = `
@@ -224,7 +224,7 @@
         `;
 
         document.getElementById('output').innerHTML = tableHTML;
-        document.getElementById('input').value = text;
+        document.getElementById('input').value = lines.join('\n'); // ✅ Mostra input pulito
       } catch (err) {
         document.getElementById('output').innerHTML = `<pre>❌ ${err.message}</pre>`;
       }
@@ -249,7 +249,7 @@
         const isAndroid = /android/i.test(navigator.userAgent);
         if (isAndroid && window.location.protocol === "file:") {
           document.getElementById('output').innerHTML = 
-            `<pre>📱 Su Android da file, la clipboard non è accessibile.\n\n👉 Tocca nella casella → Incolla → Premi "💻 Calcola"</pre>`;
+            `<pre>📱 Su Android da file, la clipboard non è accessibile.\n\n👉 Tocca nella casella → Incolla → Premi "💻 Calcola dal testo"</pre>`;
         } else {
           document.getElementById('output').innerHTML = 
             `<pre>ℹ️ Incolla manualmente (Ctrl+V o tocco lungo → Incolla)</pre>`;
@@ -270,6 +270,3 @@
   </script>
 </body>
 </html>
-
-
-
