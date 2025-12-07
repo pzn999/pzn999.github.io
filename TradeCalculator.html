@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trade Calculator – Allineamento Corretto</title>
+  <title>Trade Calculator – Colori</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -45,16 +45,6 @@
       border-radius: 8px;
       box-sizing: border-box;
     }
-    pre {
-      background: white;
-      white-space: pre;
-      border: 1px solid #ddd;
-      padding: 16px;
-      border-radius: 8px;
-      font-family: monospace; /* fondamentale */
-      font-size: 16px;
-      line-height: 1.6;
-    }
     .btn {
       background: #1976d2;
       color: white;
@@ -85,7 +75,7 @@
   </style>
 </head>
 <body>
-  <h2>📊 Trade Calculator – Allineamento Corretto</h2>
+  <h2>📊 Trade Calculator – Colori</h2>
   
   <label for="risk">Rischio (USD)</label>
   <input type="number" id="risk" value="1250" min="1" step="50">
@@ -102,14 +92,15 @@
 📊 ENTRY: 47990
 💰TP1: 47840
 💰TP2: 47500
+💰TP3: 47090
 ✋ SL : 48105"></textarea>
   
   <button onclick="processManual()" class="btn">💻 Calcola dal testo</button>
   
-  <pre id="output">Incolla un segnale e calcola!</pre>
+  <div id="output" style="margin-top: 20px; background: white; padding: 16px; border-radius: 8px; border: 1px solid #ddd;"></div>
   
   <div class="info">
-    ✅ Allineamento perfetto • TP3 opzionale • Supporto Android/Windows
+    ✅ Colori chiari • Allineamento perfetto • Funziona su Android e PC
   </div>
 
   <script>
@@ -156,12 +147,12 @@
     function processText(text) {
       const risk = parseFloat(document.getElementById('risk').value);
       if (!risk || risk <= 0) {
-        document.getElementById('output').textContent = "❌ Rischio non valido";
+        document.getElementById('output').innerHTML = "<pre>❌ Rischio non valido</pre>";
         return;
       }
 
       if (!text?.trim()) {
-        document.getElementById('output').textContent = "❌ Testo mancante";
+        document.getElementById('output').innerHTML = "<pre>❌ Testo mancante</pre>";
         return;
       }
 
@@ -187,28 +178,34 @@
           tp3pips = Math.abs(data.tp3 - data.entry) * PipsPerPrezzo;
         }
 
-        // ✅ ALLINEAMENTO FISSO CON SPAZI
-        function formatLine(left, right, col = 28) {
-          if (left.length >= col) return left + " " + right;
-          return left + " ".repeat(col - left.length) + right;
-        }
+        // ✅ Colori di sfondo leggeri
+        const bgColorEntry = "#e8f5e9"; // verde chiaro
+        const bgColorTP = "#e3f2fd";    // azzurro chiaro
+        const bgColorSL = "#fff3e0";    // arancio chiaro
 
-        let output = `Lots: ${lots}\n`;
-        output += `\n`;
-        output += `Entry: ${data.entry}\n`;
-        output += `\n`;
-        output += formatLine(`TP1pips: ${tp1pips}`, `TP1: ${data.tp1}`) + "\n";
-        output += formatLine(`TP2pips: ${tp2pips}`, `TP2: ${data.tp2}`) + "\n";
+        let rows = [];
+        rows.push(`<tr><td>Lots: ${lots}</td><td></td></tr>`);
+        rows.push(`<tr><td colspan="2" style="height:12px;"></td></tr>`);
+        rows.push(`<tr style="background-color:${bgColorEntry};"><td>Entry: ${data.entry}</td><td></td></tr>`);
+        rows.push(`<tr><td colspan="2" style="height:12px;"></td></tr>`);
+        rows.push(`<tr style="background-color:${bgColorTP};"><td>TP1pips: ${tp1pips}</td><td>TP1: ${data.tp1}</td></tr>`);
+        rows.push(`<tr style="background-color:${bgColorTP};"><td>TP2pips: ${tp2pips}</td><td>TP2: ${data.tp2}</td></tr>`);
         if (data.tp3 !== null) {
-          output += formatLine(`TP3pips: ${tp3pips}`, `TP3: ${data.tp3}`) + "\n";
+          rows.push(`<tr style="background-color:${bgColorTP};"><td>TP3pips: ${tp3pips}</td><td>TP3: ${data.tp3}</td></tr>`);
         }
-        output += `\n`;
-        output += formatLine(`SLpips: ${slpips}`, `SL: ${data.sl}`);
+        rows.push(`<tr><td colspan="2" style="height:12px;"></td></tr>`);
+        rows.push(`<tr style="background-color:${bgColorSL};"><td>SLpips: ${slpips}</td><td>SL: ${data.sl}</td></tr>`);
 
-        document.getElementById('output').textContent = output;
+        const tableHTML = `
+          <table style="width:100%; border-collapse: collapse; font-family: monospace; font-size:16px; line-height:1.6;">
+            ${rows.join('')}
+          </table>
+        `;
+
+        document.getElementById('output').innerHTML = tableHTML;
         document.getElementById('input').value = text;
       } catch (err) {
-        document.getElementById('output').textContent = `❌ ${err.message}`;
+        document.getElementById('output').innerHTML = `<pre>❌ ${err.message}</pre>`;
       }
     }
 
@@ -230,13 +227,11 @@
       } catch (err) {
         const isAndroid = /android/i.test(navigator.userAgent);
         if (isAndroid && window.location.protocol === "file:") {
-          document.getElementById('output').textContent = 
-`📱 Su Android da file, la clipboard non è accessibile.
-
-👉 Tocca nella casella sopra → "Incolla" → Premi "💻 Calcola dal testo"`;
+          document.getElementById('output').innerHTML = 
+            `<pre>📱 Su Android da file, la clipboard non è accessibile.\n\n👉 Tocca nella casella → Incolla → Premi "💻 Calcola dal testo"</pre>`;
         } else {
-          document.getElementById('output').textContent = 
-`ℹ️ Incolla manualmente (Ctrl+V su PC, tocco lungo su Android)`;
+          document.getElementById('output').innerHTML = 
+            `<pre>ℹ️ Incolla manualmente (Ctrl+V o tocco lungo → Incolla)</pre>`;
         }
       } finally {
         btn.disabled = false;
@@ -246,7 +241,7 @@
 
     function clearAll() {
       document.getElementById('input').value = '';
-      document.getElementById('output').textContent = 'Pulito.';
+      document.getElementById('output').innerHTML = '<pre>Pulito.</pre>';
     }
 
     document.getElementById('autoBtn').addEventListener('click', autoPasteAndCalculate);
