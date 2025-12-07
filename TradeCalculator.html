@@ -116,22 +116,39 @@
       return isNaN(num) ? null : num;
     }
 
-    function extractData(text) {
-	  //  Pulizia robusta: rimuove righe vuote e mantiene solo righe con BUY/SELL/SL/TP
-	  // Separa le righe
-	  const rawLines = text.split('\n');
+	  function extractData(text) {
+  const lines = text
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l !== '');
+
+  // Estrai dati da tutte le righe (non filtrare per keyword qui!)
+  let symbol = null;
+  if (lines.length > 0) {
+    const knownSymbols = Object.keys(SYMBOL_CONFIG);
+    for (const sym of knownSymbols) {
+      if (lines[0].includes(sym)) {
+        symbol = sym;
+        break;
+      }
+    }
+  }
+
+  let entry = null, tp1 = null, tp2 = null, tp3 = null, sl = null;
+  for (const line of lines) {
+    const u = line.toUpperCase();
+    if (u.includes("ENTRY")) entry = parseNumber(getLastWord(line));
+    if (u.includes("TP1"))   tp1 = parseNumber(getLastWord(line));
+    if (u.includes("TP2"))   tp2 = parseNumber(getLastWord(line));
+    if (u.includes("TP3"))   tp3 = parseNumber(getLastWord(line));
+    if (u.includes("SL"))    sl = parseNumber(getLastWord(line));
+  }
+
+  return { symbol, entry, tp1, tp2, tp3, sl };
+}
 	  
-	  // Filtra: mantieni solo righe che contengono almeno una keyword (case-insensitive)
-	  const lines = rawLines.filter(line => {
-	    const l = line.trim();
-	    if (l === '') return false;
-	    const upper = l.toUpperCase();
-	    return upper.includes('SELL') ||
-	           upper.includes('BUY') ||
-	           upper.includes('ENTRY') ||
-	           upper.includes('SL') ||
-	           upper.includes('TP');
-	  });
+    function extractData_DELETED(text) {
+	  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
       
       let symbol = null;
 
@@ -254,7 +271,40 @@
       processText(text);
     }
 
-    async function autoPasteAndCalculate() {
+	async function autoPasteAndCalculate() {
+  const input = document.getElementById('input');
+  const output = document.getElementById('output');
+  const btn = document.getElementById('autoBtn');
+  
+  btn.disabled = true;
+  btn.textContent = "⏳ Lettura...";
+
+  try {
+    const text = await navigator.clipboard.readText();
+    
+    if (!text?.trim()) {
+      output.innerHTML = "<pre>📋 Clipboard vuota</pre>";
+      input.value = "";
+      return;
+    }
+
+    // ✅ Mostra SEMPRE il testo incollato
+    input.value = text;
+
+    // Prova a calcolare
+    processText(text);
+    
+  } catch (err) {
+    console.error("Errore clipboard:", err);
+    output.innerHTML = `<pre>❌ Errore: ${err.message}\n\nDebug: il testo è stato incollato nel campo sopra.</pre>`;
+    // Il testo è già in input.value grazie alla riga sopra
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📱📥 Incolla e Calcola";
+  }
+}
+
+    async function autoPasteAndCalculate_DELETED() {
       const input = document.getElementById('input');
       const btn = document.getElementById('autoBtn');
       input.value = '';
@@ -289,4 +339,5 @@
   </script>
 </body>
 </html>
+
 
