@@ -263,7 +263,10 @@ function extractData(text) {
         `;
 
         document.getElementById('output').innerHTML = tableHTML;
-        document.getElementById('input').value = text;
+		// Mostra il testo PULITO nel campo input
+		const cleanLines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
+		document.getElementById('input').value = cleanLines.join('\n');
+        //document.getElementById('input').value = text;
       } catch (err) {
         document.getElementById('output').innerHTML = `<pre>❌ ${err.message}</pre>`;
       }
@@ -342,6 +345,7 @@ function extractData(text) {
   </script>
 </body>
 </html>
+
 
 
 
