@@ -118,11 +118,20 @@
 
     function extractData(text) {
 	  //  Pulizia robusta: rimuove righe vuote e mantiene solo righe con BUY/SELL/SL/TP
-	  const lines = text
-  		.split('\n')
-  		.map(line => line.trim())
-  		.filter(line => line !== '')
-  		.filter(line => /SELL|BUY|SL|TP/i.test(line));
+	  // Separa le righe
+	  const rawLines = text.split('\n');
+	  
+	  // Filtra: mantieni solo righe che contengono almeno una keyword (case-insensitive)
+	  const lines = rawLines.filter(line => {
+	    const l = line.trim();
+	    if (l === '') return false;
+	    const upper = l.toUpperCase();
+	    return upper.includes('SELL') ||
+	           upper.includes('BUY') ||
+	           upper.includes('ENTRY') ||
+	           upper.includes('SL') ||
+	           upper.includes('TP');
+	  });
       
       let symbol = null;
 
