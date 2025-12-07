@@ -116,13 +116,10 @@
       return isNaN(num) ? null : num;
     }
 
-	  function extractData(text) {
-  const lines = text
-    .split('\n')
-    .map(l => l.trim())
-    .filter(l => l !== '');
+function extractData(text) {
+  // ✅ Rimuove righe vuote e spazi esterni
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
 
-  // Estrai dati da tutte le righe (non filtrare per keyword qui!)
   let symbol = null;
   if (lines.length > 0) {
     const knownSymbols = Object.keys(SYMBOL_CONFIG);
@@ -339,5 +336,6 @@
   </script>
 </body>
 </html>
+
 
 
