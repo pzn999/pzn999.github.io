@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trade Calculator – Colori</title>
+  <title>Trade Calculator – Rischio Corto</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -37,14 +37,6 @@
       box-sizing: border-box;
       font-family: monospace;
     }
-    input[type="number"] {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-sizing: border-box;
-    }
     .btn {
       background: #1976d2;
       color: white;
@@ -61,11 +53,6 @@
       background: #607d8b;
     }
     .btn-clear:hover { background: #455a64; }
-    label {
-      font-weight: bold;
-      display: block;
-      margin: 10px 0 6px;
-    }
     .info {
       font-size: 14px;
       color: #666;
@@ -75,10 +62,13 @@
   </style>
 </head>
 <body>
-  <h2>📊 Trade Calculator – Colori</h2>
+  <h2>📊 Trade Calculator – Rischio Corto</h2>
   
-  <label for="risk">Rischio (USD)</label>
-  <input type="number" id="risk" value="1250" min="1" step="50">
+  <!-- Campo Rischio: corto e allineato -->
+  <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
+    <label for="risk" style="margin: 0; font-weight: bold; white-space: nowrap;">Rischio (USD)</label>
+    <input type="number" id="risk" value="1250" min="1" step="50" style="width: 120px; padding: 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px;">
+  </div>
   
   <div class="row">
     <button id="autoBtn" class="btn">📱📥 Incolla e Calcola</button>
@@ -100,7 +90,7 @@
   <div id="output" style="margin-top: 20px; background: white; padding: 16px; border-radius: 8px; border: 1px solid #ddd;"></div>
   
   <div class="info">
-    ✅ Colori chiari • Allineamento perfetto • Funziona su Android e PC
+    ✅ Campo rischio compatto • Colori chiari • Funziona ovunque
   </div>
 
   <script>
@@ -178,10 +168,9 @@
           tp3pips = Math.abs(data.tp3 - data.entry) * PipsPerPrezzo;
         }
 
-        // ✅ Colori di sfondo leggeri
-        const bgColorEntry = "#e8f5e9"; // verde chiaro
-        const bgColorTP = "#e3f2fd";    // azzurro chiaro
-        const bgColorSL = "#fff3e0";    // arancio chiaro
+        const bgColorEntry = "#e8f5e9";
+        const bgColorTP = "#e3f2fd";
+        const bgColorSL = "#fff3e0";
 
         let rows = [];
         rows.push(`<tr><td>Lots: ${lots}</td><td></td></tr>`);
