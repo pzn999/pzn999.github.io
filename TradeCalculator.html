@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trade Calculator – Interi</title>
+  <title>Trade Calculator – BUY/SELL</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -62,7 +62,7 @@
   </style>
 </head>
 <body>
-  <h2>📊 Trade Calculator – Valori Interi</h2>
+  <h2>📊 Trade Calculator – BUY/SELL</h2>
   
   <!-- Campo Rischio: corto e allineato -->
   <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
@@ -82,7 +82,6 @@
 📊 ENTRY: 47990
 💰TP1: 47840
 💰TP2: 47500
-💰TP3: 47090
 ✋ SL : 48105"></textarea>
   
   <button onclick="processManual()" class="btn">💻 Calcola dal testo</button>
@@ -90,7 +89,7 @@
   <div id="output" style="margin-top: 20px; background: white; padding: 16px; border-radius: 8px; border: 1px solid #ddd;"></div>
   
   <div class="info">
-    ✅ Tutti i valori arrotondati all'intero • PL in $ tra parentesi
+    ✅ Segno PL corretto per BUY/SELL • Valori interi • Layout chiaro
   </div>
 
   <script>
@@ -119,9 +118,28 @@
 
     function extractData(text) {
       const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-      const symbol = lines.length > 0 ? getLastWord(lines[0]) : null;
-      let entry = null, tp1 = null, tp2 = null, tp3 = null, sl = null;
+      let symbol = null, direction = null;
 
+      if (lines.length > 0) {
+        const firstLineWords = lines[0].split(/\s+/);
+        if (firstLineWords.length >= 2) {
+          direction = firstLineWords[1]; // seconda parola: "BUY" o "SELL"
+        }
+        if (firstLineWords.length >= 4) {
+          symbol = firstLineWords[3];
+        } else {
+          // Fallback: cerca il simbolo tra quelli noti
+          const knownSymbols = Object.keys(SYMBOL_CONFIG);
+          for (const sym of knownSymbols) {
+            if (lines[0].includes(sym)) {
+              symbol = sym;
+              break;
+            }
+          }
+        }
+      }
+
+      let entry = null, tp1 = null, tp2 = null, tp3 = null, sl = null;
       for (const line of lines) {
         const u = line.toUpperCase();
         if (u.includes("ENTRY")) entry = parseNumber(getLastWord(line));
@@ -131,7 +149,7 @@
         if (u.includes("SL"))    sl = parseNumber(getLastWord(line));
       }
 
-      return { symbol, entry, tp1, tp2, tp3, sl };
+      return { symbol, direction, entry, tp1, tp2, tp3, sl };
     }
 
     function formatPL(value) {
@@ -153,8 +171,8 @@
 
       try {
         const data = extractData(text);
-        if (!data.symbol || !data.entry || !data.tp1 || !data.tp2 || !data.sl) {
-          throw new Error("Mancano: ENTRY, SL, TP1, TP2");
+        if (!data.symbol || !data.direction || !data.entry || !data.tp1 || !data.tp2 || !data.sl) {
+          throw new Error("Mancano: direzione (BUY/SELL), simbolo, ENTRY, SL, TP1, TP2");
         }
 
         const config = SYMBOL_CONFIG[data.symbol];
@@ -165,7 +183,8 @@
         if (d === 0) throw new Error("SL = Entry");
 
         const lots = (risk / (d * UnitsPerLot)).toFixed(2);
-        // ✅ ARROTONDATO ALL'INTERO
+
+        // ✅ Pips (sempre positivi)
         const slpips = Math.round(d * PipsPerPrezzo);
         const tp1pips = Math.round(Math.abs(data.tp1 - data.entry) * PipsPerPrezzo);
         const tp2pips = Math.round(Math.abs(data.tp2 - data.entry) * PipsPerPrezzo);
@@ -174,13 +193,25 @@
           tp3pips = Math.round(Math.abs(data.tp3 - data.entry) * PipsPerPrezzo);
         }
 
-        // ✅ CALCOLO PL ARROTONDATO ALL'INTERO
-        const slpl = (data.entry - data.sl) * parseFloat(lots) * UnitsPerLot;
-        const tp1pl = (data.tp1 - data.entry) * parseFloat(lots) * UnitsPerLot;
-        const tp2pl = (data.tp2 - data.entry) * parseFloat(lots) * UnitsPerLot;
+        // ✅ Fattore di segno: -1 per SELL, +1 per BUY
+        const sign = (data.direction.toUpperCase() === "SELL") ? -1 : 1;
+
+        // ✅ Calcolo base del PL (prima del segno)
+        const baseSlPl = (data.entry - data.sl) * parseFloat(lots) * UnitsPerLot;
+        const baseTp1Pl = (data.tp1 - data.entry) * parseFloat(lots) * UnitsPerLot;
+        const baseTp2Pl = (data.tp2 - data.entry) * parseFloat(lots) * UnitsPerLot;
+        let baseTp3Pl = null;
+        if (data.tp3 !== null) {
+          baseTp3Pl = (data.tp3 - data.entry) * parseFloat(lots) * UnitsPerLot;
+        }
+
+        // ✅ Applica il segno
+        const slpl = sign * baseSlPl;
+        const tp1pl = sign * baseTp1Pl;
+        const tp2pl = sign * baseTp2Pl;
         let tp3pl = null;
         if (data.tp3 !== null) {
-          tp3pl = (data.tp3 - data.entry) * parseFloat(lots) * UnitsPerLot;
+          tp3pl = sign * baseTp3Pl;
         }
 
         // Colori
