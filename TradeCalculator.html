@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trade Calculator – con TP3</title>
+  <title>Trade Calculator – Allineamento Corretto</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -51,7 +51,7 @@
       border: 1px solid #ddd;
       padding: 16px;
       border-radius: 8px;
-      font-family: monospace;
+      font-family: monospace; /* fondamentale */
       font-size: 16px;
       line-height: 1.6;
     }
@@ -85,7 +85,7 @@
   </style>
 </head>
 <body>
-  <h2>📊 Trade Calculator – con TP3</h2>
+  <h2>📊 Trade Calculator – Allineamento Corretto</h2>
   
   <label for="risk">Rischio (USD)</label>
   <input type="number" id="risk" value="1250" min="1" step="50">
@@ -98,22 +98,18 @@
   <p style="text-align:center; margin:8px 0; color:#666;">— oppure incolla manualmente —</p>
   
   <textarea id="input" placeholder="Esempio:
-✅ BUY LIMIT ETHUSD
-
-📊 ENTRY: 3180
-
-💰TP1: 3190
-💰TP2: 3220
-💰TP3: 3250
-
-✋ SL : 3160"></textarea>
+✅ SELL BTCUSD
+📊 ENTRY: 47990
+💰TP1: 47840
+💰TP2: 47500
+✋ SL : 48105"></textarea>
   
   <button onclick="processManual()" class="btn">💻 Calcola dal testo</button>
   
-  <pre id="output">Imposta il rischio, incolla il segnale e calcola!</pre>
+  <pre id="output">Incolla un segnale e calcola!</pre>
   
   <div class="info">
-    ✅ Supporta TP3 opzionale • Virgola (,) = decimale • Punto (.) = migliaia
+    ✅ Allineamento perfetto • TP3 opzionale • Supporto Android/Windows
   </div>
 
   <script>
@@ -160,19 +156,19 @@
     function processText(text) {
       const risk = parseFloat(document.getElementById('risk').value);
       if (!risk || risk <= 0) {
-        document.getElementById('output').textContent = "❌ Inserisci un Rischio valido (> 0)";
+        document.getElementById('output').textContent = "❌ Rischio non valido";
         return;
       }
 
       if (!text?.trim()) {
-        document.getElementById('output').textContent = "❌ Nessun testo da elaborare";
+        document.getElementById('output').textContent = "❌ Testo mancante";
         return;
       }
 
       try {
         const data = extractData(text);
         if (!data.symbol || !data.entry || !data.tp1 || !data.tp2 || !data.sl) {
-          throw new Error("Mancano dati obbligatori: ENTRY, SL, TP1, TP2");
+          throw new Error("Mancano: ENTRY, SL, TP1, TP2");
         }
 
         const config = SYMBOL_CONFIG[data.symbol];
@@ -180,7 +176,7 @@
 
         const { UnitsPerLot, PipsPerPrezzo } = config;
         const d = Math.abs(data.entry - data.sl);
-        if (d === 0) throw new Error("Distanza SL = 0");
+        if (d === 0) throw new Error("SL = Entry");
 
         const lots = (risk / (d * UnitsPerLot)).toFixed(2);
         const slpips = d * PipsPerPrezzo;
@@ -191,29 +187,28 @@
           tp3pips = Math.abs(data.tp3 - data.entry) * PipsPerPrezzo;
         }
 
-        // Formatta l'output come richiesto
-        let outputLines = [];
-        outputLines.push(`Lots: ${lots}`);
-        outputLines.push(``);
-        outputLines.push(`Entry: ${data.entry}`);
-        outputLines.push(``);
-
-        // TP1
-        outputLines.push(`TP1pips: ${tp1pips}\t\tTP1: ${data.tp1}`);
-        // TP2
-        outputLines.push(`TP2pips: ${tp2pips}\t\tTP2: ${data.tp2}`);
-        // TP3 (opzionale)
-        if (data.tp3 !== null) {
-          outputLines.push(`TP3pips: ${tp3pips}\t\tTP3: ${data.tp3}`);
+        // ✅ ALLINEAMENTO FISSO CON SPAZI
+        function formatLine(left, right, col = 28) {
+          if (left.length >= col) return left + " " + right;
+          return left + " ".repeat(col - left.length) + right;
         }
-        outputLines.push(``);
-        // SL
-        outputLines.push(`SLpips: ${slpips}\t\t\tSL: ${data.sl}`);
 
-        document.getElementById('output').textContent = outputLines.join('\n');
+        let output = `Lots: ${lots}\n`;
+        output += `\n`;
+        output += `Entry: ${data.entry}\n`;
+        output += `\n`;
+        output += formatLine(`TP1pips: ${tp1pips}`, `TP1: ${data.tp1}`) + "\n";
+        output += formatLine(`TP2pips: ${tp2pips}`, `TP2: ${data.tp2}`) + "\n";
+        if (data.tp3 !== null) {
+          output += formatLine(`TP3pips: ${tp3pips}`, `TP3: ${data.tp3}`) + "\n";
+        }
+        output += `\n`;
+        output += formatLine(`SLpips: ${slpips}`, `SL: ${data.sl}`);
+
+        document.getElementById('output').textContent = output;
         document.getElementById('input').value = text;
       } catch (err) {
-        document.getElementById('output').textContent = `❌ Errore: ${err.message}`;
+        document.getElementById('output').textContent = `❌ ${err.message}`;
       }
     }
 
@@ -225,31 +220,33 @@
     async function autoPasteAndCalculate() {
       const input = document.getElementById('input');
       const btn = document.getElementById('autoBtn');
-      const originalText = btn.textContent;
-
-      input.value = ''; // ✅ SVUOTA PRIMA
+      input.value = '';
       btn.disabled = true;
-      btn.textContent = "⏳ Lettura clipboard...";
+      btn.textContent = "⏳ Lettura...";
 
       try {
         const text = await navigator.clipboard.readText();
         processText(text);
       } catch (err) {
-        console.warn("Clipboard non accessibile:", err);
-        document.getElementById('output').textContent = 
-`ℹ️ Impossibile leggere la clipboard.
+        const isAndroid = /android/i.test(navigator.userAgent);
+        if (isAndroid && window.location.protocol === "file:") {
+          document.getElementById('output').textContent = 
+`📱 Su Android da file, la clipboard non è accessibile.
 
-Su PC: incolla con Ctrl+V → Calcola
-Su Android: usa il pulsante o incolla manualmente`;
+👉 Tocca nella casella sopra → "Incolla" → Premi "💻 Calcola dal testo"`;
+        } else {
+          document.getElementById('output').textContent = 
+`ℹ️ Incolla manualmente (Ctrl+V su PC, tocco lungo su Android)`;
+        }
       } finally {
         btn.disabled = false;
-        btn.textContent = originalText;
+        btn.textContent = "📱📥 Incolla e Calcola";
       }
     }
 
     function clearAll() {
       document.getElementById('input').value = '';
-      document.getElementById('output').textContent = 'Pulito. Incolla un nuovo segnale!';
+      document.getElementById('output').textContent = 'Pulito.';
     }
 
     document.getElementById('autoBtn').addEventListener('click', autoPasteAndCalculate);
