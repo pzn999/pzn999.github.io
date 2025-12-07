@@ -117,7 +117,13 @@
     }
 
     function extractData(text) {
-      const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+	  //  Pulizia robusta: rimuove righe vuote e mantiene solo righe con BUY/SELL/SL/TP
+	  const lines = text
+  		.split('\n')
+  		.map(line => line.trim())
+  		.filter(line => line !== '')
+  		.filter(line => /SELL|BUY|SL|TP/i.test(line));
+      
       let symbol = null;
 
       if (lines.length > 0) {
@@ -274,3 +280,4 @@
   </script>
 </body>
 </html>
+
