@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trade Calculator – con TP3</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #222;
+    }
+    h2 {
+      text-align: center;
+      color: #1976d2;
+      margin-bottom: 20px;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .row button {
+      flex: 1;
+    }
+    textarea {
+      width: 100%;
+      height: 160px;
+      font-size: 16px;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+    pre {
+      background: white;
+      white-space: pre;
+      border: 1px solid #ddd;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .btn {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      font-size: 17px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn:hover { background: #1565c0; }
+    .btn:disabled { background: #b0bec5; cursor: not-allowed; }
+    .btn-clear {
+      background: #607d8b;
+    }
+    .btn-clear:hover { background: #455a64; }
+    label {
+      font-weight: bold;
+      display: block;
+      margin: 10px 0 6px;
+    }
+    .info {
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h2>📊 Trade Calculator – con TP3</h2>
+  
+  <label for="risk">Rischio (USD)</label>
+  <input type="number" id="risk" value="1250" min="1" step="50">
+  
+  <div class="row">
+    <button id="autoBtn" class="btn">📱📥 Incolla e Calcola</button>
+    <button id="clearBtn" class="btn btn-clear">🧹 Pulisci</button>
+  </div>
+  
+  <p style="text-align:center; margin:8px 0; color:#666;">— oppure incolla manualmente —</p>
+  
+  <textarea id="input" placeholder="Esempio:
+✅ BUY LIMIT ETHUSD
+
+📊 ENTRY: 3180
+
+💰TP1: 3190
+💰TP2: 3220
+💰TP3: 3250
+
+✋ SL : 3160"></textarea>
+  
+  <button onclick="processManual()" class="btn">💻 Calcola dal testo</button>
+  
+  <pre id="output">Imposta il rischio, incolla il segnale e calcola!</pre>
+  
+  <div class="info">
+    ✅ Supporta TP3 opzionale • Virgola (,) = decimale • Punto (.) = migliaia
+  </div>
+
+  <script>
+    const SYMBOL_CONFIG = {
+      "XAUUSD": { UnitsPerLot: 100,    PipsPerPrezzo: 100 },
+      "EURUSD": { UnitsPerLot: 100000, PipsPerPrezzo: 10000 },
+      "BTCUSD": { UnitsPerLot: 1,      PipsPerPrezzo: 10 },
+      "ETHUSD": { UnitsPerLot: 1,      PipsPerPrezzo: 10 },
+      "US500":  { UnitsPerLot: 1,      PipsPerPrezzo: 1 },
+      "US100":  { UnitsPerLot: 1,      PipsPerPrezzo: 1 },
+      "US30":   { UnitsPerLot: 1,      PipsPerPrezzo: 1 }
+    };
+
+    function getLastWord(str) {
+      if (!str) return null;
+      const words = str.trim().split(/\s+/);
+      return words.length > 0 ? words[words.length - 1] : null;
+    }
+
+    function parseNumber(str) {
+      if (!str) return null;
+      let clean = str.replace(/\./g, '').replace(/,/g, '.');
+      const num = parseFloat(clean);
+      return isNaN(num) ? null : num;
+    }
+
+    function extractData(text) {
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+      const symbol = lines.length > 0 ? getLastWord(lines[0]) : null;
+      let entry = null, tp1 = null, tp2 = null, tp3 = null, sl = null;
+
+      for (const line of lines) {
+        const u = line.toUpperCase();
+        if (u.includes("ENTRY")) entry = parseNumber(getLastWord(line));
+        if (u.includes("TP1"))   tp1 = parseNumber(getLastWord(line));
+        if (u.includes("TP2"))   tp2 = parseNumber(getLastWord(line));
+        if (u.includes("TP3"))   tp3 = parseNumber(getLastWord(line));
+        if (u.includes("SL"))    sl = parseNumber(getLastWord(line));
+      }
+
+      return { symbol, entry, tp1, tp2, tp3, sl };
+    }
+
+    function processText(text) {
+      const risk = parseFloat(document.getElementById('risk').value);
+      if (!risk || risk <= 0) {
+        document.getElementById('output').textContent = "❌ Inserisci un Rischio valido (> 0)";
+        return;
+      }
+
+      if (!text?.trim()) {
+        document.getElementById('output').textContent = "❌ Nessun testo da elaborare";
+        return;
+      }
+
+      try {
+        const data = extractData(text);
+        if (!data.symbol || !data.entry || !data.tp1 || !data.tp2 || !data.sl) {
+          throw new Error("Mancano dati obbligatori: ENTRY, SL, TP1, TP2");
+        }
+
+        const config = SYMBOL_CONFIG[data.symbol];
+        if (!config) throw new Error(`Simbolo non supportato: ${data.symbol}`);
+
+        const { UnitsPerLot, PipsPerPrezzo } = config;
+        const d = Math.abs(data.entry - data.sl);
+        if (d === 0) throw new Error("Distanza SL = 0");
+
+        const lots = (risk / (d * UnitsPerLot)).toFixed(2);
+        const slpips = d * PipsPerPrezzo;
+        const tp1pips = Math.abs(data.tp1 - data.entry) * PipsPerPrezzo;
+        const tp2pips = Math.abs(data.tp2 - data.entry) * PipsPerPrezzo;
+        let tp3pips = null;
+        if (data.tp3 !== null) {
+          tp3pips = Math.abs(data.tp3 - data.entry) * PipsPerPrezzo;
+        }
+
+        // Formatta l'output come richiesto
+        let outputLines = [];
+        outputLines.push(`Lots: ${lots}`);
+        outputLines.push(``);
+        outputLines.push(`Entry: ${data.entry}`);
+        outputLines.push(``);
+
+        // TP1
+        outputLines.push(`TP1pips: ${tp1pips}\t\tTP1: ${data.tp1}`);
+        // TP2
+        outputLines.push(`TP2pips: ${tp2pips}\t\tTP2: ${data.tp2}`);
+        // TP3 (opzionale)
+        if (data.tp3 !== null) {
+          outputLines.push(`TP3pips: ${tp3pips}\t\tTP3: ${data.tp3}`);
+        }
+        outputLines.push(``);
+        // SL
+        outputLines.push(`SLpips: ${slpips}\t\t\tSL: ${data.sl}`);
+
+        document.getElementById('output').textContent = outputLines.join('\n');
+        document.getElementById('input').value = text;
+      } catch (err) {
+        document.getElementById('output').textContent = `❌ Errore: ${err.message}`;
+      }
+    }
+
+    function processManual() {
+      const text = document.getElementById('input').value;
+      processText(text);
+    }
+
+    async function autoPasteAndCalculate() {
+      const input = document.getElementById('input');
+      const btn = document.getElementById('autoBtn');
+      const originalText = btn.textContent;
+
+      input.value = ''; // ✅ SVUOTA PRIMA
+      btn.disabled = true;
+      btn.textContent = "⏳ Lettura clipboard...";
+
+      try {
+        const text = await navigator.clipboard.readText();
+        processText(text);
+      } catch (err) {
+        console.warn("Clipboard non accessibile:", err);
+        document.getElementById('output').textContent = 
+`ℹ️ Impossibile leggere la clipboard.
+
+Su PC: incolla con Ctrl+V → Calcola
+Su Android: usa il pulsante o incolla manualmente`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    function clearAll() {
+      document.getElementById('input').value = '';
+      document.getElementById('output').textContent = 'Pulito. Incolla un nuovo segnale!';
+    }
+
+    document.getElementById('autoBtn').addEventListener('click', autoPasteAndCalculate);
+    document.getElementById('clearBtn').addEventListener('click', clearAll);
+  </script>
+</body>
+</html>
