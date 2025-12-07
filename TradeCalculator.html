@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>dal testo
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trade Calculator – PL Corretto</title>
+  <title>Trade Calculator</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -249,7 +249,7 @@
         const isAndroid = /android/i.test(navigator.userAgent);
         if (isAndroid && window.location.protocol === "file:") {
           document.getElementById('output').innerHTML = 
-            `<pre>📱 Su Android da file, la clipboard non è accessibile.\n\n👉 Tocca nella casella → Incolla → Premi "💻 Calcola dal testo"</pre>`;
+            `<pre>📱 Su Android da file, la clipboard non è accessibile.\n\n👉 Tocca nella casella → Incolla → Premi "💻 Calcola"</pre>`;
         } else {
           document.getElementById('output').innerHTML = 
             `<pre>ℹ️ Incolla manualmente (Ctrl+V o tocco lungo → Incolla)</pre>`;
@@ -270,5 +270,6 @@
   </script>
 </body>
 </html>
+
 
 
