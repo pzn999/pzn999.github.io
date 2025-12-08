@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trade Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #222;
+    }
+    h2 {
+      text-align: center;
+      color: #1976d2;
+      margin-bottom: 20px;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .row button {
+      flex: 1;
+    }
+    textarea {
+      width: 100%;
+      height: 160px;
+      font-size: 16px;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+    .btn {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      font-size: 17px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn:hover { background: #1565c0; }
+    .btn:disabled { background: #b0bec5; cursor: not-allowed; }
+    .btn-clear {
+      background: #607d8b;
+    }
+    .btn-clear:hover { background: #455a64; }
+    .info {
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h2>📊 Trade Calculator</h2>
+  
+  <!-- Campo Rischio: ora TEXT per accettare virgole -->
+  <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
+    <label for="risk" style="margin: 0; font-weight: bold; white-space: nowrap;">Rischio (USD)</label>
+    <input type="text" id="risk" placeholder="es. 600,900,1200" style="width: 150px; padding: 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px;">
+  </div>
+  
+  <div class="row">
+    <button id="autoBtn" class="btn">📱📥 Incolla e Calcola</button>
+    <button id="clearBtn" class="btn btn-clear">🧹 Pulisci</button>
+  </div>
+  
+  <p style="text-align:center; margin:8px 0; color:#666;">— oppure incolla manualmente —</p>
+  
+  <textarea rows=8 id="input" placeholder="Esempio:
+✅ SELL BTCUSD
+📊 ENTRY: 47990
+💰TP1: 47840
+💰TP2: 47500
+✋ SL : 48105"></textarea>
+  
+  <button onclick="processManual()" class="btn">💻 Calcola</button>
+  
+  <div id="output" style="margin-top: 20px; background: white; padding: 16px; border-radius: 8px; border: 1px solid #ddd;"></div>
+  
+  <script>
+    const SYMBOL_CONFIG = {
+      "XAUUSD": { UnitsPerLot: 100,    PipsPerPrezzo: 100 },
+      "EURUSD": { UnitsPerLot: 100000, PipsPerPrezzo: 10000 },
+      "BTCUSD": { UnitsPerLot: 1,      PipsPerPrezzo: 10 },
+      "ETHUSD": { UnitsPerLot: 1,      PipsPerPrezzo: 10 },
+      "US500":  { UnitsPerLot: 1,      PipsPerPrezzo: 1 },
+      "US100":  { UnitsPerLot: 1,      PipsPerPrezzo: 1 },
+      "US30":   { UnitsPerLot: 1,      PipsPerPrezzo: 1 }
+    };
+
+    function getLastWord(str) {
+      if (!str) return null;
+      const words = str.trim().split(/\s+/);
+      return words.length > 0 ? words[words.length - 1] : null;
+    }
+
+    function parseNumber(str) {
+      if (!str) return null;
+      let clean = str.replace(/\./g, '').replace(/,/g, '.');
+      const num = parseFloat(clean);
+      return isNaN(num) ? null : num;
+    }
+
+    function extractData(text) {
+      const lines = text
+        .split(/\r?\n/)
+        .map(line => line.replace(/\s+/g, ' ').trim())
+        .filter(line => line.length > 0);
+
+      let symbol = null;
+      if (lines.length > 0) {
+        const knownSymbols = Object.keys(SYMBOL_CONFIG);
+        for (const sym of knownSymbols) {
+          if (lines[0].includes(sym)) {
+            symbol = sym;
+            break;
+          }
+        }
+      }
+
+      let entry = null, tp1 = null, tp2 = null, tp3 = null, sl = null;
+      for (const line of lines) {
+        const u = line.toUpperCase();
+        if (u.includes("ENTRY")) entry = parseNumber(getLastWord(line));
+        if (u.includes("TP1"))   tp1 = parseNumber(getLastWord(line));
+        if (u.includes("TP2"))   tp2 = parseNumber(getLastWord(line));
+        if (u.includes("TP3"))   tp3 = parseNumber(getLastWord(line));
+        if (u.includes("SL"))    sl = parseNumber(getLastWord(line));
+      }
+
+      return { symbol, entry, tp1, tp2, tp3, sl };
+    }
+
+    function formatPL(value) {
+      return Math.round(value).toString();
+    }
+
+    function processText(text) {
+      const riskInput = document.getElementById('risk').value.trim();
+      if (!riskInput) {
+        document.getElementById('output').innerHTML = "<pre>❌ Inserisci almeno un valore di rischio (es: 600,900,1200)</pre>";
+        return;
+      }
+
+      // Parsing multi-rischio
+      const riskStrings = riskInput.split(',').map(s => s.trim()).filter(s => s !== '');
+      const riskValues = riskStrings.map(s => {
+        const num = parseFloat(s.replace(/,/g, '.'));
+        return isNaN(num) || num <= 0 ? null : num;
+      });
+
+      if (riskValues.some(r => r === null)) {
+        document.getElementById('output').innerHTML = "<pre>❌ Rischio: usa numeri validi separati da virgola (es: 600,900,1200)</pre>";
+        return;
+      }
+
+      if (!text?.trim()) {
+        document.getElementById('output').innerHTML = "<pre>❌ Testo mancante</pre>";
+        return;
+      }
+
+      try {
+        const data = extractData(text);
+        if (!data.symbol || !data.entry || !data.tp1 || !data.tp2 || !data.sl) {
+          throw new Error("Mancano: ENTRY, SL, TP1, TP2");
+        }
+
+        const config = SYMBOL_CONFIG[data.symbol];
+        if (!config) throw new Error(`Simbolo non supportato: ${data.symbol}`);
+
+        const { UnitsPerLot, PipsPerPrezzo } = config;
+        const distanceSL = Math.abs(data.entry - data.sl);
+        if (distanceSL === 0) throw new Error("SL = Entry");
+
+        // Calcola lotti per ogni rischio
+        const lotsArray = riskValues.map(risk => (risk / (distanceSL * UnitsPerLot)).toFixed(2));
+        const lotsDisplay = lotsArray.join(' ; ');
+
+        // Pips (sempre positivi per TP, negativi per SL)
+        const slpips = -Math.round(distanceSL * PipsPerPrezzo);
+        const tp1pips = Math.round(Math.abs(data.tp1 - data.entry) * PipsPerPrezzo);
+        const tp2pips = Math.round(Math.abs(data.tp2 - data.entry) * PipsPerPrezzo);
+        let tp3pips = null;
+        if (data.tp3 !== null) {
+          tp3pips = Math.round(Math.abs(data.tp3 - data.entry) * PipsPerPrezzo);
+        }
+
+        // Calcola PL per ogni rischio
+        const calculatePL = (lots) => {
+          const l = parseFloat(lots);
+          const slpl = -Math.abs((data.entry - data.sl) * l * UnitsPerLot);
+          const tp1pl = Math.abs((data.tp1 - data.entry) * l * UnitsPerLot);
+          const tp2pl = Math.abs((data.tp2 - data.entry) * l * UnitsPerLot);
+          let tp3pl = null;
+          if (data.tp3 !== null) {
+            tp3pl = Math.abs((data.tp3 - data.entry) * l * UnitsPerLot);
+          }
+          return { slpl, tp1pl, tp2pl, tp3pl };
+        };
+
+        // Genera array di PL per ogni rischio
+        const allPL = lotsArray.map(lots => calculatePL(lots));
+        const tp1plAll = allPL.map(pl => formatPL(pl.tp1pl)).join(' ; ');
+        const tp2plAll = allPL.map(pl => formatPL(pl.tp2pl)).join(' ; ');
+        const tp3plAll = data.tp3 !== null ? allPL.map(pl => formatPL(pl.tp3pl)).join(' ; ') : null;
+        const slplAll = allPL.map(pl => formatPL(pl.slpl)).join(' ; ');
+
+        // Colori
+        const bgColorEntry = "#e8f5e9";
+        const bgColorTP = "#e3f2fd";
+        const bgColorSL = "#fff3e0";
+
+        let rows = [];
+        rows.push(`<tr><td>Lots: ${lotsDisplay}</td><td></td></tr>`);
+        rows.push(`<tr><td colspan="2" style="height:12px;"></td></tr>`);
+        rows.push(`<tr style="background-color:${bgColorEntry};"><td>Entry: ${data.entry}</td><td></td></tr>`);
+        rows.push(`<tr><td colspan="2" style="height:12px;"></td></tr>`);
+        
+        // TP1
+        rows.push(`<tr style="background-color:${bgColorTP};"><td>TP1 pips: ${tp1pips} (${tp1plAll} $)</td><td>TP1: ${data.tp1}</td></tr>`);
+        // TP2
+        rows.push(`<tr style="background-color:${bgColorTP};"><td>TP2 pips: ${tp2pips} (${tp2plAll} $)</td><td>TP2: ${data.tp2}</td></tr>`);
+        // TP3 (opzionale)
+        if (data.tp3 !== null) {
+          rows.push(`<tr style="background-color:${bgColorTP};"><td>TP3 pips: ${tp3pips} (${tp3plAll} $)</td><td>TP3: ${data.tp3}</td></tr>`);
+        }
+        rows.push(`<tr><td colspan="2" style="height:12px;"></td></tr>`);
+        // SL
+        rows.push(`<tr style="background-color:${bgColorSL};"><td>SL pips: ${slpips} (${slplAll} $)</td><td>SL: ${data.sl}</td></tr>`);
+
+        const tableHTML = `
+          <table style="width:100%; border-collapse: collapse; font-family: monospace; font-size:16px; line-height:1.6;">
+            ${rows.join('')}
+          </table>
+        `;
+
+        document.getElementById('output').innerHTML = tableHTML;
+
+        // Pulisci e mostra solo righe rilevanti
+        const cleanLines = text
+          .split(/\r?\n/)
+          .map(l => l.replace(/\s+/g, ' ').trim())
+          .filter(l => l !== '' && (
+            l.includes('SELL') ||
+            l.includes('BUY') ||
+            l.includes('ENTRY') ||
+            l.includes('TP') ||
+            l.includes('SL')
+          ));
+        document.getElementById('input').value = cleanLines.join('\n');
+      } catch (err) {
+        document.getElementById('output').innerHTML = `<pre>❌ ${err.message}</pre>`;
+      }
+    }
+
+    function processManual() {
+      const text = document.getElementById('input').value;
+      processText(text);
+    }
+
+    async function autoPasteAndCalculate() {
+      const input = document.getElementById('input');
+      const output = document.getElementById('output');
+      const btn = document.getElementById('autoBtn');
+      
+      btn.disabled = true;
+      btn.textContent = "⏳ Lettura...";
+
+      try {
+        const text = await navigator.clipboard.readText();
+        if (!text?.trim()) {
+          output.innerHTML = "<pre>📋 Clipboard vuota</pre>";
+          input.value = "";
+          return;
+        }
+        input.value = text;
+        processText(text);
+      } catch (err) {
+        console.error("Errore clipboard:", err);
+        output.innerHTML = `<pre>❌ Errore: ${err.message}\n\nDebug: il testo è stato incollato nel campo sopra.</pre>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "📱📥 Incolla e Calcola";
+      }
+    }
+
+    function clearAll() {
+      document.getElementById('input').value = '';
+      document.getElementById('output').innerHTML = '<pre>Pulito.</pre>';
+    }
+
+    // === Gestione persistenza del rischio ===
+    function initRiskField() {
+      const riskInput = document.getElementById('risk');
+      const savedRisk = localStorage.getItem('tradeCalculatorRisk');
+      riskInput.value = savedRisk !== null ? savedRisk : '600';
+      
+      riskInput.addEventListener('change', () => {
+        const value = riskInput.value.trim();
+        if (value !== '') {
+          localStorage.setItem('tradeCalculatorRisk', value);
+        }
+      });
+    }
+
+    initRiskField();
+    document.getElementById('autoBtn').addEventListener('click', autoPasteAndCalculate);
+    document.getElementById('clearBtn').addEventListener('click', clearAll);
+  </script>
+</body>
+</html>
