@@ -211,10 +211,10 @@
 
         // Genera array di PL per ogni rischio
         const allPL = lotsArray.map(lots => calculatePL(lots));
-        const tp1plAll = allPL.map(pl => formatPL(pl.tp1pl)).join(' ; ');
-        const tp2plAll = allPL.map(pl => formatPL(pl.tp2pl)).join(' ; ');
-        const tp3plAll = data.tp3 !== null ? allPL.map(pl => formatPL(pl.tp3pl)).join(' ; ') : null;
-        const slplAll = allPL.map(pl => formatPL(pl.slpl)).join(' ; ');
+        const tp1plAll = allPL.map(pl => formatPL(pl.tp1pl)).join(';');
+        const tp2plAll = allPL.map(pl => formatPL(pl.tp2pl)).join(';');
+        const tp3plAll = data.tp3 !== null ? allPL.map(pl => formatPL(pl.tp3pl)).join(';') : null;
+        const slplAll = allPL.map(pl => formatPL(pl.slpl)).join(';');
 
         // Colori
         const bgColorEntry = "#e8f5e9";
