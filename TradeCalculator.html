@@ -260,7 +260,16 @@ function extractData(text) {
 
         document.getElementById('output').innerHTML = tableHTML;
 		// Mostra il testo PULITO nel campo input
-		const cleanLines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
+		const cleanLines = text
+			  .split(/\r?\n/)
+			  .map(l => l.replace(/\s+/g, ' ').trim())
+			  .filter(l => l !== '' && (
+				l.includes('SELL') ||
+				l.includes('BUY') ||
+				l.includes('ENTRY') ||
+				l.includes('TP') ||
+				l.includes('SL')
+			  ));
 		document.getElementById('input').value = cleanLines.join('\n');
         //document.getElementById('input').value = text;
       } catch (err) {
@@ -341,6 +350,7 @@ function extractData(text) {
   </script>
 </body>
 </html>
+
 
 
 
