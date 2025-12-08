@@ -84,7 +84,7 @@
 💰TP2: 47500
 ✋ SL : 48105"></textarea>
   
-  <button onclick="processManual()" class="btn">💻 Calcola dal testo</button>
+  <button onclick="processManual()" class="btn">💻 Calcola</button>
   
   <div id="output" style="margin-top: 20px; background: white; padding: 16px; border-radius: 8px; border: 1px solid #ddd;"></div>
   
@@ -207,7 +207,7 @@ function extractData(text) {
         const lots = (risk / (d * UnitsPerLot)).toFixed(2);
 
         // ✅ Pips (sempre positivi)
-        const slpips = Math.round(d * PipsPerPrezzo);
+        const slpips = -Math.round(d * PipsPerPrezzo);
         const tp1pips = Math.round(Math.abs(data.tp1 - data.entry) * PipsPerPrezzo);
         const tp2pips = Math.round(Math.abs(data.tp2 - data.entry) * PipsPerPrezzo);
         let tp3pips = null;
@@ -341,6 +341,7 @@ function extractData(text) {
   </script>
 </body>
 </html>
+
 
 
 
