@@ -67,8 +67,7 @@
   <!-- Campo Rischio: corto e allineato -->
   <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
     <label for="risk" style="margin: 0; font-weight: bold; white-space: nowrap;">Rischio (USD)</label>
-    <input type="number" id="risk" value="600" min="1" step="50" style="width: 120px; padding: 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px;">
-  </div>
+<input type="number" id="risk" min="1" step="50" style="width: 120px; padding: 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px;">  </div>
   
   <div class="row">
     <button id="autoBtn" class="btn">📱📥 Incolla e Calcola</button>
@@ -260,6 +259,7 @@ function extractData(text) {
 
         document.getElementById('output').innerHTML = tableHTML;
 		// Mostra il testo PULITO nel campo input
+//		const cleanLines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
 		const cleanLines = text
 			  .split(/\r?\n/)
 			  .map(l => l.replace(/\s+/g, ' ').trim())
@@ -270,6 +270,8 @@ function extractData(text) {
 				l.includes('TP') ||
 				l.includes('SL')
 			  ));
+		
+		
 		document.getElementById('input').value = cleanLines.join('\n');
         //document.getElementById('input').value = text;
       } catch (err) {
@@ -344,14 +346,30 @@ function extractData(text) {
       document.getElementById('input').value = '';
       document.getElementById('output').innerHTML = '<pre>Pulito.</pre>';
     }
+	
+	// === Gestione persistenza del rischio ===
+	function initRiskField() {
+	  const riskInput = document.getElementById('risk');
+	  
+	  const savedRisk = localStorage.getItem('tradeCalculatorRisk');
+	  riskInput.value = savedRisk !== null ? savedRisk : '';
+	  
+	  // Salva il valore ogni volta che l'utente lo modifica e perde il focus (o preme Invio)
+	  riskInput.addEventListener('change', () => {
+		const value = riskInput.value.trim();
+		if (value !== '') {
+		  localStorage.setItem('tradeCalculatorRisk', value);
+		}
+	  });
+	}
+
+    // Inizializza il campo rischio con persistenza
+    initRiskField();
 
     document.getElementById('autoBtn').addEventListener('click', autoPasteAndCalculate);
-    document.getElementById('clearBtn').addEventListener('click', clearAll);
-  </script>
+    document.getElementById('clearBtn').addEventListener('click', clearAll);  </script>
 </body>
 </html>
-
-
 
 
 
