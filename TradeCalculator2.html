@@ -176,10 +176,10 @@
           throw new Error("Mancano: ENTRY, SL, TP1, TP2");
         }
 
-        		// Copia Entry nella clipboard
-    		navigator.clipboard.writeText(data.entry.toString()).catch(err => {
-    		  console.warn("Impossibile copiare Entry:", err);
-    		});
+        // Copia Entry nella clipboard
+        navigator.clipboard.writeText(data.entry.toString()).catch(err => {
+          console.warn("Impossibile copiare Entry:", err);
+        });
 
         const config = SYMBOL_CONFIG[data.symbol];
         if (!config) throw new Error(`Simbolo non supportato: ${data.symbol}`);
