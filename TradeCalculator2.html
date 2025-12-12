@@ -189,6 +189,8 @@
         if (distanceSL === 0) throw new Error("SL = Entry");
 
         // Calcola lotti per ogni rischio
+        const sizeArray = riskValues.map(risk => (risk / distanceSL).toFixed(2));
+        const sizeDisplay = sizeArray.join(' ; ');
         const lotsArray = riskValues.map(risk => (risk / (distanceSL * UnitsPerLot)).toFixed(2));
         const lotsDisplay = lotsArray.join(' ; ');
 
