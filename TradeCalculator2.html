@@ -222,12 +222,13 @@
         const slplAll = allPL.map(pl => formatPL(pl.slpl)).join(';');
 
         // Colori
+        const bgColorLots = "#e8eb94";
         const bgColorEntry = "#e8f5e9";
         const bgColorTP = "#e3f2fd";
         const bgColorSL = "#fff3e0";
 
         let rows = [];
-        rows.push(`<tr><td>Lots: ${lotsDisplay}</td><td></td></tr>`);
+        rows.push(`<tr style="background-color:${bgColorLots};"><td>Lots: ${lotsDisplay}</td><td>Size: ${sizeDisplay}</td></tr>`);
         rows.push(`<tr><td colspan="2" style="height:12px;"></td></tr>`);
         rows.push(`<tr style="background-color:${bgColorEntry};"><td>Entry: ${data.entry}</td><td></td></tr>`);
         rows.push(`<tr><td colspan="2" style="height:12px;"></td></tr>`);
