@@ -177,10 +177,11 @@
           throw new Error("Mancano: ENTRY, SL, TP1, TP2");
         }
 
-        // Copia Entry nella clipboard - ELIMINATO PERCHE' USANDO LO SCRIPT PER AutoHotkey NON SERVE PIU'
-       // navigator.clipboard.writeText(data.entry.toString()).catch(err => {
-        //  console.warn("Impossibile copiare Entry:", err);
-        //});
+        // Copia Entry nella clipboard - solo su mobile
+        const isWindows = /Win/.test(navigator.userAgent) && !/Android|Mobile|Tablet/i.test(navigator.userAgent);
+        if (!isWindows)  {
+          navigator.clipboard.writeText(data.entry.toString()).catch(err => {console.warn("Impossibile copiare Entry:", err); });
+        }
 
         const config = SYMBOL_CONFIG[data.symbol];
         if (!config) throw new Error(`Simbolo non supportato: ${data.symbol}`);
