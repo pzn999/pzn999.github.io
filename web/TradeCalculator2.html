@@ -91,13 +91,20 @@
   <script>
     const SYMBOL_CONFIG = {
       "XAUUSD": { UnitsPerLot: 100,    PipsPerPrezzo: 100 },
+      "XAU": { UnitsPerLot: 100,    PipsPerPrezzo: 100 },
       "EURUSD": { UnitsPerLot: 100000, PipsPerPrezzo: 10000 },
+      "EUR": { UnitsPerLot: 100000, PipsPerPrezzo: 10000 },
       "BTCUSD": { UnitsPerLot: 1,      PipsPerPrezzo: 10 },
+      "BTC": { UnitsPerLot: 1,      PipsPerPrezzo: 10 },
       "ETHUSD": { UnitsPerLot: 1,      PipsPerPrezzo: 10 },
+      "ETH": { UnitsPerLot: 1,      PipsPerPrezzo: 10 },
       "US500":  { UnitsPerLot: 1,      PipsPerPrezzo: 1 },
+      "SP500":  { UnitsPerLot: 1,      PipsPerPrezzo: 1 },
       "US100":  { UnitsPerLot: 1,      PipsPerPrezzo: 1 },
+      "USTEC":  { UnitsPerLot: 1,      PipsPerPrezzo: 1 },
       "US30":   { UnitsPerLot: 1,      PipsPerPrezzo: 1 },
-      "DAX40":   { UnitsPerLot: 1,      PipsPerPrezzo: 1 }
+      "DAX40":   { UnitsPerLot: 1,      PipsPerPrezzo: 1 },
+      "DE40":   { UnitsPerLot: 1,      PipsPerPrezzo: 1 }
     };
 
     function getLastWord(str) {
