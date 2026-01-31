@@ -1,6 +1,9 @@
 # TradeCalc.ps1 - Versione corretta per prezzi con PUNTO decimale (es. EURUSD 1.03600)
 # Non rimuove i punti → li tratta come decimali (corretto per trading)
 # Supporta virgola solo se presente (es. 1,03600 → diventa 1.03600)
+# Prodotto da Qwen3 (chat.qwen.ai)
+# chat: Guida Personalizzata Excel
+# Identificazione: TradeCalc PowerShell Script (oppure: "Lo script PowerShell che legge la clipboard, calcola i lotti e genera uno script AHK per AutoHotkey"
 
 $Risk = 1500
 $TempPath = "C:\temp"
