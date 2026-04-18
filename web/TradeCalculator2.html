@@ -205,12 +205,12 @@
         const lotsDisplay = lotsArray.join(' ; ');
 
         // Pips (sempre positivi per TP, negativi per SL)
-        const slpips = -Math.round(distanceSL * PipsPerPrezzo);
-        const tp1pips = Math.round(Math.abs(data.tp1 - data.entry) * PipsPerPrezzo);
-        const tp2pips = Math.round(Math.abs(data.tp2 - data.entry) * PipsPerPrezzo);
+        const slpips = -(distanceSL * PipsPerPrezzo).toFixed(1);
+        const tp1pips = (Math.abs(data.tp1 - data.entry) * PipsPerPrezzo).toFixed(1);
+        const tp2pips = (Math.abs(data.tp2 - data.entry) * PipsPerPrezzo).toFixed(1);
         let tp3pips = null;
         if (data.tp3 !== null) {
-          tp3pips = Math.round(Math.abs(data.tp3 - data.entry) * PipsPerPrezzo);
+          tp3pips = (Math.abs(data.tp3 - data.entry) * PipsPerPrezzo).toFixed(1);
         }
 
         // Calcola PL per ogni rischio
