@@ -216,12 +216,12 @@
         // Calcola PL per ogni rischio
         const calculatePL = (lots) => {
           const l = parseFloat(lots);
-          const slpl = -Math.abs((data.entry - data.sl) * l * UnitsPerLot);
-          const tp1pl = Math.abs((data.tp1 - data.entry) * l * UnitsPerLot);
-          const tp2pl = Math.abs((data.tp2 - data.entry) * l * UnitsPerLot);
+          const slpl = -((data.entry - data.sl) * l * UnitsPerLot).toFixed(1);
+          const tp1pl = ((data.tp1 - data.entry) * l * UnitsPerLot).toFixed(1);
+          const tp2pl = ((data.tp2 - data.entry) * l * UnitsPerLot).toFixed(1);
           let tp3pl = null;
           if (data.tp3 !== null) {
-            tp3pl = Math.abs((data.tp3 - data.entry) * l * UnitsPerLot);
+            tp3pl = ((data.tp3 - data.entry) * l * UnitsPerLot).toFixed(1);
           }
           return { slpl, tp1pl, tp2pl, tp3pl };
         };
