@@ -1,0 +1,21 @@
+{
+    "version": "1.0",
+
+    "watch_file": "C:/Dati/Documents/CGA/Trading/auto/signal_bot/signals/signal.jpg",
+
+    "accounts":
+    [
+        {
+            "name": "Conto 1",
+            "balance": 200000,
+            "risk": 350,
+            "hotkey": "\\"
+        },
+        {
+            "name": "Conto 2",
+            "balance": 300000,
+            "risk": 500,
+            "hotkey": "'"
+        }
+    ]
+}
