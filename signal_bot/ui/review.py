@@ -185,7 +185,7 @@ class ReviewWindow:
         print()
         print("===================================")
         print("Signal confirmed")
-        print("Use Ctrl+Shift+Q on cTrader")
+        print("Use Hotkeys on cTrader")
         print("===================================")
         print()
 
