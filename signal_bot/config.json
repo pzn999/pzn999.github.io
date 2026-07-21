@@ -2,7 +2,9 @@
     "version": "1.0",
 
     "watch_file": "C:/Dati/Documents/CGA/Trading/auto/signal_bot/signals/signal.jpg",
-
+	"news_test_mode": false,
+	"news_test_time": "2026-07-21 07:44",
+	
     "accounts":
     [
         {
