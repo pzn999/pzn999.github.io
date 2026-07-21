@@ -13,7 +13,10 @@ SYMBOLS = [
     "GBPAUD",
     "GBPNZD",
     "USDCAD",
+    "USDCHF",
+    "USDJPY",
     "EURAUD",
+    "EURCAD",
     "BTCUSD",
     "BTC",   
     "ETHUSD",
@@ -48,6 +51,7 @@ FIXES = {
 
     "TPI": "TP1",
     "TPL": "TP1",
+    "TPZ": "TP2",
 
     "ENTRATA": "ENTRY"
 
@@ -91,6 +95,20 @@ def parse_number(s):
 
 def extract_value(text, labels):
 
+    #
+    # Primo prezzo completo presente nel testo.
+    # Serve come riferimento per ricostruire
+    # prezzi OCR incompleti.
+    #
+
+    reference = None
+
+    mref = re.search(r"(\d+),(\d{3,5})", text)
+
+    if mref:
+
+        reference = mref.group(1)
+
     for label in labels:
 
         m = re.search(
@@ -98,11 +116,40 @@ def extract_value(text, labels):
             text
         )
 
-        if m:
-            return parse_number(m.group(1))
+        if not m:
+            continue
+
+        value = m.group(1).strip()
+
+        #
+        # Caso:
+        #
+        # ,60850
+        #
+
+        if value.startswith(","):
+
+            if reference:
+
+                value = reference + value
+
+        #
+        # Caso:
+        #
+        # 60850
+        #
+        # (5 cifre senza virgola)
+        #
+
+        elif "," not in value and "." not in value:
+
+            if len(value) == 5 and reference:
+
+                value = reference + "," + value
+
+        return parse_number(value)
 
     return None
-
 
 # ----------------------------------------------------
 # SYMBOL
@@ -137,7 +184,7 @@ def extract_symbol(text):
 # ----------------------------------------------------
 # MAIN PARSER
 # ----------------------------------------------------
-
+    
 def parse_signal(raw):
 
     text = normalize(raw)
@@ -211,44 +258,49 @@ def parse_signal(raw):
             tp1 = be
             
 
+    entry = extract_value(
+        text,
+        [
+            "ENTRY",
+            "ENTRATA"
+        ]
+    )
+
+    sl = extract_value(
+        text,
+        [
+            "SL"
+        ]
+    )
+
+    tp2 = extract_value(
+        text,
+        [
+            "TP2"
+        ]
+    )
+
+    tp3 = extract_value(
+        text,
+        [
+            "TP3"
+        ]
+    )
+
+
+
     signal = {
 
         "symbol": symbol,
-
         "side": side,
-
         "order_type": order_type,
 
-        "entry": extract_value(
-            text,
-            [
-                "ENTRY",
-                "ENTRATA"
-            ]
-        ),
-
-        "sl": extract_value(
-            text,
-            [
-                "SL"
-            ]
-        ),
+        "entry": entry,
+        "sl": sl,
 
         "tp1": tp1,
-
-        "tp2": extract_value(
-            text,
-            [
-                "TP2"
-            ]
-        ),
-
-        "tp3": extract_value(
-            text,
-            [
-                "TP3"
-            ]
-        ),
+        "tp2": tp2,
+        "tp3": tp3,
 
         "be": be
 

@@ -15,7 +15,10 @@ SYMBOL_CONFIG = {
     "GBPAUD": {"UnitsPerLot": 100000, "PipsPerPrice": 10000, "USD_conversion": 0.7},
     "GBPNZD": {"UnitsPerLot": 100000, "PipsPerPrice": 10000, "USD_conversion": 0.58},
     "USDCAD": {"UnitsPerLot": 100000, "PipsPerPrice": 10000, "USD_conversion": 0.71},
+    "USDCHF": {"UnitsPerLot": 100000, "PipsPerPrice": 10000, "USD_conversion": 0.8},
+    "USDJPY": {"UnitsPerLot": 100000, "PipsPerPrice": 10000, "USD_conversion": 162},
     "EURAUD": {"UnitsPerLot": 100000, "PipsPerPrice": 10000, "USD_conversion": 0.7},
+    "EURCAD": {"UnitsPerLot": 100000, "PipsPerPrice": 10000, "USD_conversion": 0.7},
 
     "BTCUSD": {"UnitsPerLot": 1, "PipsPerPrice": 1, "USD_conversion": 1},
     "BTC":    {"UnitsPerLot": 1, "PipsPerPrice": 1, "USD_conversion": 1},
