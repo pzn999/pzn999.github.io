@@ -9,7 +9,6 @@ import time
 # Hash dell'ultima immagine elaborata
 _last_hash = None
 
-
 def md5(path):
 
     with open(path, "rb") as f:
@@ -35,9 +34,6 @@ class Handler(FileSystemEventHandler):
         if path != self.target:
             return
 
-        # aspetta che il file sia completamente scritto
-##        time.sleep(0.2)
-
         try:
 
             new_hash = md5(path)
@@ -46,14 +42,10 @@ class Handler(FileSystemEventHandler):
 
             return
 
-        # identico all'ultima immagine
         if new_hash == _last_hash:
             return
 
         _last_hash = new_hash
-
-        print("modified:", path)
-        print("SIGNAL DETECTED")
 
         self.callback()
 

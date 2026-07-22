@@ -305,5 +305,5 @@ def parse_signal(raw):
         "be": be
 
     }
-
+    
     return signal
