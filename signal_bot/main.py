@@ -24,7 +24,7 @@ config = load_config()
 
 WATCH_FILE = config["watch_file"]
 ACCOUNTS = config["accounts"]
-
+LAST_SIGNAL_KEY = None
 
 # ------------------------------------------------------
 # HOTKEY
@@ -71,8 +71,12 @@ threading.Thread(
 
 def process_signal():
 
-    print(">>> PROCESS START")
+    global LAST_SIGNAL_KEY
 
+    print("==============================")
+    print(">>> PROCESS START")
+    print("==============================")
+    
     text = read_image(WATCH_FILE)
 
     print("===== OCR TEXT =====")
@@ -83,8 +87,29 @@ def process_signal():
 
     print(signal)
 
-    state["last_signal"] = signal
+    #
+    # Evita popup duplicati dello stesso segnale
+    #
 
+    signal_key = (
+        signal["symbol"],
+        signal["side"],
+        signal["order_type"],
+        signal["entry"],
+        signal["sl"],
+        signal["tp1"],
+        signal["tp2"],
+    )
+
+    if signal_key == LAST_SIGNAL_KEY:
+
+        print("Segnale duplicato ignorato")
+        return
+
+    LAST_SIGNAL_KEY = signal_key
+
+    state["last_signal"] = signal
+    
     #
     # High impact news
     #
@@ -95,26 +120,18 @@ def process_signal():
     #
     # Review
     #
-
+    
     ReviewWindow(
-
         calculate(
-
             signal,
-
             ACCOUNTS[0]["risk"]
-
         ),
-
         news_active,
-
         news_message,
-
         news_color
-
     ).show()
-
-
+    
+    
 print("BOT STARTED")
 
 start_watcher(
