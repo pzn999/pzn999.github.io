@@ -1,4 +1,8 @@
+from config_loader import load_config
+
 import math
+
+config = load_config()
 
 # =====================================================
 # CONFIGURAZIONE SIMBOLI
@@ -116,7 +120,9 @@ def calculate(signal, risk):
 
     if signal["tp3"] is None:
 
-        tp_lots = round(lots / 2, 2)
+#        tp_lots = round(lots / 2, 2)
+        tp_lots = round(lots * config["tp1_partial"], 2)
+        
 
     else:
 
