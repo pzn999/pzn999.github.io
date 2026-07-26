@@ -11,8 +11,8 @@ reader = easyocr.Reader(
 
 
 def read_image(path):
-
-    print("OCR PATH:", path)
+    
+    print("read_image - OCR PATH:", path)
 
     # attende che il file esista
     for _ in range(50):
