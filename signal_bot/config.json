@@ -2,6 +2,7 @@
     "version": "1.0",
 
     "watch_file": "C:/Dati/Documents/CGA/Trading/auto/signal_bot/signals/signal.jpg",
+    "watch_json_file": "C:/Dati/Documents/CGA/Trading/auto/signal_bot/signals/signal.json",
 	"news_test_mode": false,
 	"news_test_time": "2026-07-21 07:44",
 	"tp1_partial": 0.3,

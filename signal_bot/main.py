@@ -24,6 +24,7 @@ import time
 config = load_config()
 
 WATCH_FILE = config["watch_file"]
+WATCH_JSON_FILE = config["watch_json_file"]
 ACCOUNTS = config["accounts"]
 LAST_SIGNAL_KEY = None
 
@@ -69,25 +70,64 @@ threading.Thread(
 # ------------------------------------------------------
 # PROCESS SIGNAL
 # ------------------------------------------------------
+import json
 
-def process_signal():
+def write_json(path, signal):
 
-    global LAST_SIGNAL_KEY
+    with open(path, "w", encoding="utf-8") as f:
 
-    print("==============================")
-    print(">>> PROCESS START")
-    print("==============================")
-    
-    text = read_image(WATCH_FILE)
+        json.dump(
+            signal,
+            f,
+            indent=4,
+            ensure_ascii=False
+        )
+        
+def read_json(path):
 
-    print("===== OCR TEXT =====")
-    print(repr(text))
-    print("====================")
+    with open(path, "r", encoding="utf-8") as f:
+        signal = json.load(f)
 
-    signal = parse_signal(text)
+    return signal
+
+
+from pathlib import Path
+
+def process_signal(path):
+
+
+    ext = Path(path).suffix.lower()
+
+    if ext.strip() == ".json":
+
+        signal = read_json(path)
+
+    else:
+
+        text = read_image(path)
+
+        signal = parse_signal(text)
+
+        global LAST_SIGNAL_KEY
+
+        print("==============================")
+        print(">>> PROCESS START")
+        print("==============================")
+        
+        text = read_image(WATCH_FILE)
+
+        print("===== OCR TEXT =====")
+        print(repr(text))
+        print("====================")
+
+        signal = parse_signal(text)
+        write_json(
+            WATCH_JSON_FILE,
+            signal
+        )
 
     print(signal)
-
+    
     #
     # Evita popup duplicati dello stesso segnale
     #
@@ -100,6 +140,8 @@ def process_signal():
         signal["sl"],
         signal["tp1"],
         signal["tp2"],
+        signal["tp3"],
+        signal["be"]
     )
 
     if signal_key == LAST_SIGNAL_KEY:
@@ -136,11 +178,8 @@ def process_signal():
 print("BOT STARTED")
 
 start_watcher(
-
-    WATCH_FILE,
-
+    [WATCH_FILE, WATCH_JSON_FILE],
     process_signal
-
 )
 
 try:
