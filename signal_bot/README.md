@@ -2,7 +2,7 @@
 
 **Trading Signals Bot** is a Python application that automates the processing of trading signals received as images.
 
-The application continuously monitors a folder, performs OCR on newly received images, extracts trading information, calculates the correct position size according to the configured monetary risk, warns the user about nearby high-impact economic news, and assists the manual execution of trades on multiple cTrader accounts.
+The application continuously monitors a folder, performs OCR on newly received images or reads from a json file containing the trade signal, extracts trading information, calculates the correct position size according to the configured monetary risk, warns the user about nearby high-impact economic news, and assists the manual execution of trades on multiple cTrader accounts.
 
 The philosophy of the project is:
 
@@ -14,19 +14,23 @@ The trader always has the opportunity to review the signal before executing the 
 
 # Features
 
-## Automatic image monitoring
+## Automatic image or json monitoring
 
 The bot continuously watches a configured folder.
 
-Whenever a new signal image is detected:
+Whenever a new signal image or json is detected:
 
-- OCR is executed
+- OCR is executed or the signal.json is read
 - the signal is parsed
 - lot size is calculated
 - economic news are checked
 - a review popup is displayed
 
 ---
+
+## JSON
+
+Signal json is read and all the trade data are set.
 
 ## OCR
 
