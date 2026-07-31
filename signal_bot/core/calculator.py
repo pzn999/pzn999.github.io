@@ -51,8 +51,7 @@ def validate(signal):
         "side",
         "order_type",
         "entry",
-        "sl",
-        "tp1"
+        "sl"
     ]
 
     for field in required:
@@ -101,6 +100,16 @@ def calculate(signal, risk):
 
     # almeno 0.01
     lots = max(0.01, lots)
+    
+    if signal["tp1"] is None:
+
+        if signal["side"] == "BUY":
+            
+            signal["tp1"] = round(entry + distance, 5)
+            
+        else:
+            signal["tp1"] = round(entry - distance,5)
+            print(f" SELL tp1 calcolato=",signal["tp1"])
 
     # -----------------------------
     # BE Pips
